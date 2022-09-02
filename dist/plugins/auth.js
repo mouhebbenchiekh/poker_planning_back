@@ -1,11 +1,10 @@
 import oauthPlugin from '@fastify/oauth2';
-import fastifyPlugin from 'fastify-plugin';
 import axios from 'axios';
 /**
  * @param {FastifyInstance} fastify
  * @param {Object} options
  */
-async function authRoute(fastify, options) {
+const authRoute = async (fastify, options) => {
     fastify.register(oauthPlugin, {
         name: 'googleOAuth2',
         scope: ['profile', 'email'],
@@ -26,7 +25,9 @@ async function authRoute(fastify, options) {
             console.log({ state }, 'heeeeeeereee /n');
             callback(new Error('Invalid state mouheb '));
         },
-        generateStateFunction: () => { },
+        generateStateFunction: () => {
+            return 'mouheb';
+        },
         // facebook redirect here after the user login
         callbackUri: 'http://poker.planning.org',
     });
@@ -35,6 +36,7 @@ async function authRoute(fastify, options) {
             const result = await this.googleOAuth2
                 .getAccessTokenFromAuthorizationCodeFlow(request)
                 .catch((error) => {
+                console.log({ errrrrrror: error });
                 return reply.status(408).send({ error });
             });
             const userinfo = await axios
@@ -55,11 +57,5 @@ async function authRoute(fastify, options) {
             return reply.status(400).send(error.message);
         }
     });
-    fastify.post('/token', async (request, reply) => {
-        try {
-            const token = request.headers.authorization;
-        }
-        catch (error) { }
-    });
-}
-export default fastifyPlugin(authRoute);
+};
+export default authRoute;
