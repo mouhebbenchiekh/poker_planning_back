@@ -1,6 +1,6 @@
-import oauthPlugin, { OAuth2Token } from '@fastify/oauth2';
+import oauthPlugin, { OAuth2Token, Token } from '@fastify/oauth2';
 import fastifyPlugin from 'fastify-plugin';
-import {
+import fastify, {
   FastifyInstance,
   FastifyPluginAsync,
   FastifyPluginOptions,
@@ -56,7 +56,7 @@ const authRoute: FastifyPluginAsync<FastifyPluginOptions> = async (
 
   fastify.get('/login/google/callback', async function (request, reply) {
     try {
-      const result: any = await this.googleOAuth2
+      const result: OAuth2Token = await this.googleOAuth2
         .getAccessTokenFromAuthorizationCodeFlow(request)
         .catch((error) => {
           console.log({ errrrrrror: error });
@@ -75,11 +75,26 @@ const authRoute: FastifyPluginAsync<FastifyPluginOptions> = async (
 
       return reply.send({
         data: userinfo?.data,
-        token: result.token.access_token,
+        token: result.token,
       });
     } catch (error: any) {
       return reply.status(400).send(error.message);
     }
   });
+  fastify.post<{ Body: { token: Token }; Params: Object }>(
+    '/refresh',
+    async function (request, reply) {
+      const refresh_token = request.body.token;
+      if (refresh_token) {
+        const result: OAuth2Token = (await this.googleOAuth2
+          .getNewAccessTokenUsingRefreshToken(refresh_token, request.params)
+          .catch((error) => {
+            console.log({ refreshError: error });
+          })) as OAuth2Token;
+        reply.send(result);
+      }
+      reply.status(401).send('forbidden');
+    }
+  );
 };
 export default authRoute;
