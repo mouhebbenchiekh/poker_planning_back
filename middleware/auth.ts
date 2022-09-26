@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { IUser } from 'types';
 
 export const verifyToken = async (req: FastifyRequest, res: FastifyReply) => {
   let token = req.headers.authorization;
@@ -17,9 +16,6 @@ export const verifyToken = async (req: FastifyRequest, res: FastifyReply) => {
     }
   );
 
-  /* .catch((error: AxiosError) => {
-        console.log({ axiossss: error.response?.data });
-      }); */
   if (data) {
     req.user = data;
   } else {

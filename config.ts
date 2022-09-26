@@ -1,7 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import fastifyEnv from '@fastify/env';
 import fastifyPlugin from 'fastify-plugin';
-import { FastifyValidationResult } from 'fastify/types/schema';
 
 const schema = {
   type: 'object',

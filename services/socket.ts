@@ -23,13 +23,17 @@ export const socketService = (fastify: FastifyInstance) => {
       socket.emit('room_users', roomUsers);
     });
 
-    socket.on('leave_room', ({ room, userId }) => {
-      console.log({ room, id: socket.id, userId });
-      users = users.filter((user) => user.userId !== userId);
-      console.log({ users }, 'leave');
-      let roomUsers = users.filter((user) => user.room === room);
-      socket.to(room).emit('room_users', roomUsers);
-      socket.leave(room);
+    socket.on('disconnect', () => {
+      const index = users.findIndex((user) => user.id === socket.id);
+      const user = users[index];
+      users = users.filter((user) => user.id !== socket.id);
+      let roomUsers = users.filter((user) => user.room === user.room);
+      socket.to(user?.room).emit('room_users', roomUsers);
+      socket.leave(user?.room);
+    });
+    socket.on('reload_room', (room) => {
+      socket.to(room).emit('reload');
+      socket.emit('reload');
     });
     socket.on('send_value', ({ room, username, value, userId }) => {
       users = users.map((user) => {
@@ -43,13 +47,11 @@ export const socketService = (fastify: FastifyInstance) => {
       socket.to(room).emit('room_users', roomUsers);
       socket.emit('room_users', roomUsers);
     });
-    socket.on('flip_cards', ({ room }) => {
-      console.log('flippp', room);
-      socket.to(room).emit('flip');
-      socket.emit('flip');
+    socket.on('flip_cards', ({ room, face }) => {
+      socket.to(room).emit('flip', face);
+      socket.emit('flip', face);
     });
     socket.on('newStory', ({ room }) => {
-      console.log({ room });
       users = users.map((user) => {
         if (user.room === room) {
           return { ...user, value: '' };
@@ -58,7 +60,6 @@ export const socketService = (fastify: FastifyInstance) => {
       });
 
       let roomUsers = users.filter((user) => user.room === room);
-      console.log({ roomUsers });
       socket.to(room).emit('room_users', roomUsers);
       socket.emit('room_users', roomUsers);
     });

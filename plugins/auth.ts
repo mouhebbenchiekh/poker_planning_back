@@ -1,12 +1,9 @@
 import oauthPlugin, { OAuth2Token, Token } from '@fastify/oauth2';
-import fastifyPlugin from 'fastify-plugin';
-import fastify, {
+import {
   FastifyInstance,
   FastifyPluginAsync,
   FastifyPluginOptions,
-  FastifyRequest,
 } from 'fastify';
-import { FastifyReply, ReplyGenericInterface } from 'fastify/types/reply';
 import { OAuth2Namespace } from '@fastify/oauth2';
 import axios, { AxiosError } from 'axios';
 
@@ -43,7 +40,6 @@ const authRoute: FastifyPluginAsync<FastifyPluginOptions> = async (
         callback();
         return;
       }
-      console.log({ state }, 'heeeeeeereee /n');
       callback(new Error('Invalid state mouheb '));
     },
     generateStateFunction: () => {
@@ -59,7 +55,6 @@ const authRoute: FastifyPluginAsync<FastifyPluginOptions> = async (
       const result: OAuth2Token = await this.googleOAuth2
         .getAccessTokenFromAuthorizationCodeFlow(request)
         .catch((error) => {
-          console.log({ errrrrrror: error });
           return reply.status(408).send({ error });
         });
 
@@ -86,11 +81,11 @@ const authRoute: FastifyPluginAsync<FastifyPluginOptions> = async (
     async function (request, reply) {
       const refresh_token = request.body.token;
       if (refresh_token) {
-        const result: OAuth2Token = (await this.googleOAuth2
-          .getNewAccessTokenUsingRefreshToken(refresh_token, request.params)
-          .catch((error) => {
-            console.log({ refreshError: error });
-          })) as OAuth2Token;
+        const result: OAuth2Token =
+          (await this.googleOAuth2.getNewAccessTokenUsingRefreshToken(
+            refresh_token,
+            request.params
+          )) as OAuth2Token;
         reply.send(result);
       }
       reply.status(401).send('forbidden');

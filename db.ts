@@ -1,6 +1,5 @@
-import fastify, {
+import {
   FastifyInstance,
-  FastifyPluginAsync,
   FastifyPluginCallback,
   FastifyPluginOptions,
 } from 'fastify';
@@ -18,7 +17,6 @@ const connect: FastifyPluginCallback<FastifyPluginOptions> = (
   options,
   done
 ) => {
-  console.log({ database: fastify.config.DATABASE_URL });
   mongoose.connect(fastify.config.DATABASE_URL, {});
   done();
 };
